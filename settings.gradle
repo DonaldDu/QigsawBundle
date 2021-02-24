@@ -1,0 +1,4 @@
+include ':Plugin'
+include ':ApkMd5'
+include ':app'
+rootProject.name = "QigsawBundle"
