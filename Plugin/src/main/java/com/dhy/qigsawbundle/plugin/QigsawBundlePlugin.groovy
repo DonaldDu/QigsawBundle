@@ -4,7 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class QigsawBundlePlugin implements Plugin<Project> {
-    private def QIGSAW = "qigsaw"
+    private def QIGSAW = "qigsaw-bundle"
     private Project project
     private AutoPluginDelegate autoPlugin = new AutoPluginDelegate()
 
