@@ -84,7 +84,7 @@ object BundleApksUtil {
         }
         val moduleVersion = apk.moduleVersion(info.splitName)
         if (moduleVersion != null) splitInfo.version = moduleVersion
-
+        splitInfo.initUseSplits(apkFile.manifestXml)
         splitInfo.dexNumber += apk.dexNumber()
         if (info.minSdkVersion != null) splitInfo.minSdkVersion = info.minSdkVersion.toInt()
 
@@ -102,6 +102,14 @@ object BundleApksUtil {
         val newApkName = apk.newName(splitInfo.version, splitApkData.md5)
         splitApkData.url = "$apkFileHost/$newApkName"
         apk.renameTo(File(apk.parent, newApkName))
+    }
+
+    private fun SplitInfo.initUseSplits(manifestXml: String) {
+        val useSplits = manifestXml.parseUseSplitsFromManifestXml()
+        if (useSplits.isNotEmpty()) {
+            if (dependencies == null) dependencies = mutableSetOf()
+            dependencies.addAll(useSplits)
+        }
     }
 
     private fun File.newName(version: String, md5: String): String {
@@ -233,4 +241,15 @@ fun File.deleteAll() {
         }
     }
     delete()
+}
+
+fun String.parseUseSplitsFromManifestXml(): Set<String> {
+    val splits: MutableSet<String> = mutableSetOf()
+    val usesSplit = "<uses-split android:name=\"([^\"]+)".toRegex()
+    var result = usesSplit.find(this)
+    while (result != null) {
+        splits.add(result.groupValues[1])
+        result = result.next()
+    }
+    return splits
 }
