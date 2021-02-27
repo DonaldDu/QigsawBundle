@@ -3,8 +3,6 @@ package com.dhy.qigsawbundle.plugin
 import com.dhy.qigsawbundle.apkmd5.apkMd5
 import com.dhy.qigsawbundle.apkmd5.md5
 import com.google.gson.Gson
-import com.iqiyi.qigsaw.buildtool.gradle.internal.entity.SplitDetails
-import com.iqiyi.qigsaw.buildtool.gradle.internal.entity.SplitInfo
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkMeta
 import org.apache.commons.io.FileUtils
@@ -65,6 +63,7 @@ object BundleApksUtil {
                 showInfo(apkFileHost, details, it)
             }
         }
+        details.updateSplits = details.splits.map { it.splitName }
         if (infoJson.exists()) infoJson.exists()
         FileUtils.writeByteArrayToFile(infoJson, gson.toJson(details).toByteArray())
     }
