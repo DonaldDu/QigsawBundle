@@ -9,5 +9,5 @@ java {
 }
 publishGAV("com.gitee.DonaldDu.QigsawBundle:ApkMD5:$libV")
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
