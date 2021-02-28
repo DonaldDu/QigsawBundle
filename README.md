@@ -1,10 +1,23 @@
 # QigsawBundle [![](https://jitpack.io/v/com.gitee.DonaldDu/QigsawBundle.svg)](https://jitpack.io/#com.gitee.DonaldDu/QigsawBundle)
 
 ```
-implementation 'com.gitee.DonaldDu.QigsawBundle:Plugin:xxx'
+    implementation 'com.gitee.DonaldDu.QigsawBundle:Plugin:xxx'
+
+    apply plugin: 'qigsaw-bundle'
+    qigsawBundleOption {
+        log = true
+        apkFileHost = 'http://www.qigsaw.com/'
+        copyToDirectory = file('../splits').absolutePath
+
+        options = [
+                '--ks=' + file("../keystore/debug.jks"),
+//              "--connected-device",//fixme 注释这行，如果没有连接手机或模拟器
+                "--ks-pass=pass:qigsawtest",
+                '--ks-key-alias=qigsawtest',
+                "--key-pass=pass:qigsawtest"
+        ]
+    }
 ```
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+
