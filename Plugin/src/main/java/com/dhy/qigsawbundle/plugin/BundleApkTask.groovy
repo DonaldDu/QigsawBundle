@@ -11,27 +11,23 @@ class BundleApkTask extends DefaultTask {
     @Input
     File apks
     @Input
-    String bundleTool
+    boolean log = true
     @Input
     QigsawBundleOption bundleOption
-    @Input
-    boolean log = true
+    private String bundleTool
 
     @TaskAction
     void generate() throws IOException {
-        if (bundleOption == null) {
-            println 'You should set QigsawBundleOption'
-            return
+        bundleTool = project.findProperty('BUNDLE_TOOL_PATH')
+        if (bundleTool == null) {
+            throw new IllegalArgumentException('You must set BUNDLE_TOOL_PATH first, eg: project.ext.BUNDLE_TOOL_PATH')
+        }
+        if (bundleOption.apkFileHost == null) {
+            throw new IllegalArgumentException('You should set QigsawBundleOption.apkFileHost for apk url')
         }
         def aab = findAAB()
         if (aab == null || !aab.exists()) {
-            println 'aab file not found, please fix aabFolder'
-            return
-        }
-        if (log) println 'BundleApkTask ' + aab.absolutePath
-        if (bundleOption.apkFileHost == null) {
-            if (log) println 'You should QigsawBundleOption.apkFileHost for apk url'
-            return
+            throw new IllegalArgumentException('aab file not found, please fix aabFolder')
         }
         if (apks.exists()) apks.delete()
         def cmd = "java -jar $bundleTool build-apks --bundle=$aab --output=$apks "
