@@ -28,6 +28,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
             BundleApkTask task = project.tasks.create("$name${baseVariant.name.capitalize()}Apks", BundleApkTask)
             task.aabFolder = new File(project.buildDir, option.aabFolder.call(baseVariant))
             task.apks = new File(task.aabFolder, "${project.name}.apks")
+            task.baseApks = new File(task.aabFolder, "base.apks")
             task.bundleOption = project.extensions.qigsawBundleOption
             if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) task.dependsOn('bundle')
             task.setGroup(QIGSAW)

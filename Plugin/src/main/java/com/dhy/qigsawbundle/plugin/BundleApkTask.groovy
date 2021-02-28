@@ -11,6 +11,8 @@ class BundleApkTask extends DefaultTask {
     @Input
     File apks
     @Input
+    File baseApks
+    @Input
     boolean log = true
     @Input
     QigsawBundleOption bundleOption
@@ -29,15 +31,30 @@ class BundleApkTask extends DefaultTask {
         if (aab == null || !aab.exists()) {
             throw new IllegalArgumentException('aab file not found, please fix aabFolder')
         }
-        if (apks.exists()) apks.delete()
-        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --output=$apks "
+        println 'bundle to apks ...'
+        genSplits(aab)
+        genBaseApk(aab)
+        BundleApksUtil.INSTANCE.bundleApks(bundleOption.apkFileHost, apks, baseApks, bundleOption.keepLanguageConfigApks, bundleOption.copyToDirectory)
+    }
+
+    private void genSplits(File aab) {
+        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --output=$apks "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }
-        println 'bundle to apks ...'
+        println 'gen Split apks ...'
         if (log) println 'cmd: ' + cmd
         BundleApksUtil.INSTANCE.runCommand(cmd)
-        BundleApksUtil.INSTANCE.bundleApks(bundleOption.apkFileHost, apks, bundleOption.keepLanguageConfigApks, bundleOption.copyToDirectory)
+    }
+
+    private void genBaseApk(File aab) {
+        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --output=$baseApks --mode=universal --modules=base "
+        if (bundleOption.options != null && bundleOption.options.size() > 0) {
+            cmd += bundleOption.options.join(' ')
+        }
+        println 'gen base apk ...'
+        if (log) println 'cmd: ' + cmd
+        BundleApksUtil.INSTANCE.runCommand(cmd)
     }
 
     private File findAAB() {

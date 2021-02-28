@@ -5,24 +5,33 @@ import com.dhy.qigsawbundle.apkmd5.md5
 import com.google.gson.Gson
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkMeta
+import net.dongliu.apk.parser.parser.ResourceTableParser
+import net.dongliu.apk.parser.struct.AndroidConstants
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.nio.charset.Charset
+import java.nio.ByteBuffer
 import java.util.zip.ZipFile
 
 object BundleApksUtil {
     private var splitVersionCode = 0L
 
     @JvmStatic
-    fun bundleApks(apkFileHost: String, apks: File, keepLanguageConfigApks: Boolean, copyToDirectory: String?) {
+    fun bundleApks(apkFileHost: String, apks: File, baseApks: File, keepLanguageConfigApks: Boolean, copyToDirectory: String?) {
         splitVersionCode = System.currentTimeMillis() / 1000
         val splits = File(apks.parent, "splits")
         apks.unzipSplits(splits)
-        val app = getBaseApkMeta(splits)
         clearSplitApks(keepLanguageConfigApks, splits)
-        genSplitInfo(apkFileHost.replace("/+$".toRegex(), ""), app.versionName, splits, File(splits, app.versionInfoJson()))
+
+        val universalApk = baseApks.unzipUniversalApk()
+        val app = ApkFile(universalApk).meta
+        val baseApk = File(splits, "base-v${app.versionName}@${app.versionCode}.apk")
+        universalApk.renameTo(baseApk)
+
+        val splitApks = splits.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }
+        genSplitInfo(apkFileHost.replace("/+$".toRegex(), ""), app.versionName, splitApks, File(splits, app.versionInfoJson()))
+
         if (splits.exists() && copyToDirectory != null) {
             copySplits(splits, File(copyToDirectory))
         }
@@ -38,11 +47,6 @@ object BundleApksUtil {
         return "${packageName}-v${versionName}@${versionCode}.json"
     }
 
-    private fun getBaseApkMeta(splits: File): ApkMeta {
-        val base = File(splits, "base-master.apk")
-        return ApkFile(base).meta
-    }
-
     private fun clearSplitApks(keepLanguageConfigApks: Boolean, splits: File) {
         splits.listFiles()?.forEach {
             if (it.isEmptyDpiApk()) it.delete()
@@ -52,17 +56,17 @@ object BundleApksUtil {
         }
     }
 
-    private fun genSplitInfo(apkFileHost: String, appVersionName: String, splits: File, infoJson: File) {
+    private fun genSplitInfo(apkFileHost: String, appVersionName: String, splitApks: List<File>?, infoJson: File) {
         val details = SplitDetails()
         details.qigsawId = appVersionName
         details.appVersionName = appVersionName
         details.splits = mutableListOf()
 
-        splits.listFiles()?.forEach {
-            if (it.name.endsWith(".apk")) {
-                showInfo(apkFileHost, details, it)
-            }
+        splitApks?.forEach {
+            showInfo(apkFileHost, details, it)
         }
+        if (renameTasks.isNotEmpty()) renameTasks.values.forEach { it?.rename(true) }
+        renameTasks.clear()
         details.updateSplits = details.splits.map { it.splitName }
         if (infoJson.exists()) infoJson.exists()
         FileUtils.writeByteArrayToFile(infoJson, gson.toJson(details).toByteArray())
@@ -70,7 +74,7 @@ object BundleApksUtil {
 
     private fun showInfo(apkFileHost: String, details: SplitDetails, apk: File) {
         val apkFile = ApkFile(apk)
-        val info = apkFile.meta
+        val info = apkFile.apkMeta
         val splitInfo = details.splits.find { it.splitName == info.splitName } ?: SplitInfo()
         if (splitInfo.splitName == null) {//new
             details.splits.add(splitInfo)
@@ -82,8 +86,10 @@ object BundleApksUtil {
             //运行时会根据md5来判断是否更新，如果未更新，本地为使用旧版本号（自动降低特定组件版本号）。
             splitInfo.version = splitVersionCode.toString()
         }
-        val moduleVersion = apk.moduleVersion(info.splitName)
+        val moduleVersion = apkFile.parseModuleVersion()
         if (moduleVersion != null) splitInfo.version = moduleVersion
+        apkFile.close()
+
         splitInfo.initUseSplits(apkFile.manifestXml)
         splitInfo.dexNumber += apk.dexNumber()
         if (info.minSdkVersion != null) splitInfo.minSdkVersion = info.minSdkVersion.toInt()
@@ -99,9 +105,20 @@ object BundleApksUtil {
             if (splitLibData != null) splitInfo.libData.add(splitLibData)
         }
 
-        val newApkName = apk.newName(splitInfo.version, splitApkData.md5)
-        splitApkData.url = "$apkFileHost/$newApkName"
-        apk.renameTo(File(apk.parent, newApkName))
+        RenameTask(apk, splitInfo, splitApkData, apkFileHost).rename(false)
+    }
+
+    private val renameTasks: MutableMap<File, RenameTask?> = mutableMapOf()
+
+    private data class RenameTask(val apk: File, val splitInfo: SplitInfo, val splitApkData: SplitInfo.SplitApkData, val apkFileHost: String) {
+        fun rename(force: Boolean) {
+            if (force || splitInfo.version.contains("@")) {
+                val newApkName = apk.newName(splitInfo.version, splitApkData.md5)
+                splitApkData.url = "$apkFileHost/$newApkName"
+                apk.renameTo(File(apk.parent, newApkName))
+                renameTasks[apk] = null
+            } else renameTasks[apk] = this
+        }
     }
 
     private fun SplitInfo.initUseSplits(manifestXml: String) {
@@ -198,23 +215,21 @@ object BundleApksUtil {
     }
 }
 
-fun File.readEntry(name: String): String? {
-    val file = ZipFile(this)
-    val e = file.getEntry(name)
-    if (e == null) {
-        file.close()
-        return null
+fun ApkFile.parseModuleVersion(): String? {
+    val data = getFileData(AndroidConstants.RESOURCE_FILE) ?: return null
+    val buffer = ByteBuffer.wrap(data)
+    val resourceTableParser = ResourceTableParser(buffer)
+    resourceTableParser.parse()
+    val stringPool = resourceTableParser.resourceTable.stringPool
+    try {
+        val moduleVersion = "module_version_"
+        for (i in 0..Int.MAX_VALUE) {
+            val v = stringPool[i]
+            if (v.startsWith(moduleVersion)) return v.substring(moduleVersion.length)//module_version_1.1@2
+        }
+    } catch (e: Exception) {
     }
-    val inputStream = file.getInputStream(e)
-    val text = inputStream.readBytes().toString(Charset.defaultCharset())
-    inputStream.close()
-    file.close()
-    return text
-}
-
-fun File.moduleVersion(splitName: String): String? {
-    val name = "META-INF/module_version_$splitName"
-    return readEntry(name)//1.1@2
+    return null
 }
 
 fun File.unzipSplits(folder: File) {
@@ -231,6 +246,17 @@ fun File.unzipSplits(folder: File) {
         }
     }
     zip.close()
+}
+
+fun File.unzipUniversalApk(): File {//universal.apk
+    val zip = ZipFile(this)
+    val baseApk = File(parentFile, "base.apk")
+    val e = zip.getEntry("universal.apk")
+    val inputStream = zip.getInputStream(e)
+    FileUtils.copyInputStreamToFile(inputStream, baseApk)
+    inputStream.close()
+    zip.close()
+    return baseApk
 }
 
 fun File.deleteAll() {

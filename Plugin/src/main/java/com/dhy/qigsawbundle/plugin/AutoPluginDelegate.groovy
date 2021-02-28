@@ -21,12 +21,8 @@ class AutoPluginDelegate {
 
     private void insertModuleVersion(Project project) {
         project.with {
-            apply plugin: 'insert-meta-inf'
-            insertMetaInf {
-                metaInfName = "module_version_" + project.name
-                def versionName = project.android.defaultConfig.versionName
-                def versionCode = project.android.defaultConfig.versionCode
-                metaInfContent = "${versionName}@${versionCode}"
+            android.defaultConfig {
+                resValue "string", "module_version_${project.name}", "module_version_${versionName}@${versionCode}"
             }
         }
     }

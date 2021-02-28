@@ -33,6 +33,5 @@ dependencies {
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'com.gitee.DonaldDu:apk-parser:2.6.10.3'
 
-    implementation "com.github.DonaldDu:InsertMetaInf:1.0.1"
     implementation "com.github.DonaldDu.DynamicProviderSwitch:Plugin:1.0.5"
 }
