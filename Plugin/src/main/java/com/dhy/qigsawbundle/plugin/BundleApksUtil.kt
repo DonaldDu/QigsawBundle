@@ -26,7 +26,7 @@ object BundleApksUtil {
 
         val universalApk = baseApks.unzipUniversalApk()
         val app = ApkFile(universalApk).meta
-        val baseApk = File(splits, "base-v${app.versionName}@${app.versionCode}.apk")
+        val baseApk = File(splits, "base-v${app.versionName}@${app.versionCode}-${universalApk.apkMd5()}.apk")
         universalApk.renameTo(baseApk)
 
         val splitApks = splits.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }

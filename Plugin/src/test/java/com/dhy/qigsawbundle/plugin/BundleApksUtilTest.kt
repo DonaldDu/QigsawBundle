@@ -6,7 +6,7 @@ import java.io.File
 class BundleApksUtilTest {
     @Test
     fun test() {
-        val folder = "C:\\datas\\Qigsaw2Test\\app\\build\\outputs\\bundle\\debug"
+        val folder = "D:\\Donald\\Qigsaw2Test\\app\\build\\outputs\\bundle\\debug"
         val apks = File(folder, "app.apks")
         val baseApks = File(folder, "base.apks")
         if (apks.exists() && baseApks.exists()) {
