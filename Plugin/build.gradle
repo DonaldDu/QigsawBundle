@@ -34,4 +34,5 @@ dependencies {
     implementation 'com.gitee.DonaldDu:apk-parser:2.6.10.3'
 
     implementation "com.github.DonaldDu.DynamicProviderSwitch:Plugin:1.0.5"
+    implementation "com.github.DonaldDu:OpenUsage:1.0.0"
 }

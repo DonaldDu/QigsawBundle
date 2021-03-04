@@ -1,5 +1,8 @@
 package com.dhy.qigsawbundle.plugin
 
+import com.dhy.openusage.Honor
+import com.dhy.openusage.OpenUsage
+import com.dhy.openusage.UsingApp
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -14,6 +17,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
         autoPlugin.apply(project)
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
         createTask()
+        initOpenUsage()
     }
 
     private void createTask() {
@@ -32,6 +36,14 @@ class QigsawBundlePlugin implements Plugin<Project> {
             task.bundleOption = project.extensions.qigsawBundleOption
             if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) task.dependsOn('bundle')
             task.setGroup(QIGSAW)
+        }
+    }
+
+    private void initOpenUsage() {
+        project.afterEvaluate {
+            def name = 'QigsawBundle'
+            def url = 'https://gitee.com/DonaldDu/QigsawBundle'
+            OpenUsage.report(project, name, url)
         }
     }
 }
