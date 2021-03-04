@@ -10,6 +10,7 @@ import net.dongliu.apk.parser.struct.AndroidConstants
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.util.zip.ZipFile
@@ -18,22 +19,41 @@ object BundleApksUtil {
     private var splitVersionCode = 0L
 
     @JvmStatic
-    fun bundleApks(apkFileHost: String, apks: File, baseApks: File, keepLanguageConfigApks: Boolean, copyToDirectory: String?) {
+    fun bundleApks(bundleOption: BundleOption, apks: File, baseApks: File) {
         splitVersionCode = System.currentTimeMillis() / 1000
         val splits = File(apks.parent, "splits")
         apks.unzipSplits(splits)
-        clearSplitApks(keepLanguageConfigApks, splits)
+        clearSplitApks(bundleOption.keepLanguageConfigApks, splits)
 
         val universalApk = baseApks.unzipUniversalApk()
         val app = ApkFile(universalApk).meta
-        val baseApk = File(splits, "base-v${app.versionName}@${app.versionCode}-${universalApk.apkMd5()}.apk")
+
+        val fileNameParams: MutableMap<String, String> = mutableMapOf()
+        fileNameParams["appId"] = app.packageName
+        fileNameParams["split"] = ""
+        fileNameParams["abi"] = ""
+        fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
+        fileNameParams["type"] = bundleOption.type ?: ""
+        fileNameParams["split"] = "base"
+        fileNameParams["md5"] = universalApk.apkMd5()
+        bundleOption.fileNameParams = fileNameParams
+        bundleOption.apkFileHost = bundleOption.apkFileHost.trimTailSeparator()
+        val baseApk = File(splits, bundleOption.format() + ".apk")
         universalApk.renameTo(baseApk)
 
         val splitApks = splits.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }
-        genSplitInfo(apkFileHost.replace("/+$".toRegex(), ""), app.versionName, splitApks, File(splits, app.versionInfoJson()))
+        val infoJsonFile = genSplitInfo(bundleOption, app.versionName, splitApks)
 
-        if (splits.exists() && copyToDirectory != null) {
-            copySplits(splits, File(copyToDirectory))
+        fileNameParams["split"] = ""
+        fileNameParams["abi"] = ""
+        fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
+        fileNameParams["md5"] = FileInputStream(infoJsonFile).use { it.md5() }
+        val newInfoJsonFile = File(splits, bundleOption.format() + ".json")
+        FileUtils.copyFile(infoJsonFile, newInfoJsonFile)
+        infoJsonFile.delete()
+
+        if (splits.exists() && bundleOption.copyToDirectory != null) {
+            copySplits(splits, File(bundleOption.copyToDirectory))
         }
     }
 
@@ -41,10 +61,6 @@ object BundleApksUtil {
         sourceFolder.listFiles()?.forEach {
             FileUtils.copyFile(it, File(destinationFolder, it.name))
         }
-    }
-
-    private fun ApkMeta.versionInfoJson(): String {
-        return "${packageName}-v${versionName}@${versionCode}.json"
     }
 
     private fun clearSplitApks(keepLanguageConfigApks: Boolean, splits: File) {
@@ -56,23 +72,24 @@ object BundleApksUtil {
         }
     }
 
-    private fun genSplitInfo(apkFileHost: String, appVersionName: String, splitApks: List<File>?, infoJson: File) {
+    private fun genSplitInfo(bundleOption: BundleOption, appVersionName: String, splitApks: List<File>?): File {
         val details = SplitDetails()
         details.qigsawId = appVersionName
         details.appVersionName = appVersionName
         details.splits = mutableListOf()
 
         splitApks?.forEach {
-            showInfo(apkFileHost, details, it)
+            showInfo(bundleOption, details, it)
         }
         if (renameTasks.isNotEmpty()) renameTasks.values.forEach { it?.rename(true) }
         renameTasks.clear()
         details.updateSplits = details.splits.map { it.splitName }
-        if (infoJson.exists()) infoJson.exists()
-        FileUtils.writeByteArrayToFile(infoJson, gson.toJson(details).toByteArray())
+        val info = File.createTempFile("info", ".json")
+        FileUtils.writeByteArrayToFile(info, gson.toJson(details).toByteArray())
+        return info
     }
 
-    private fun showInfo(apkFileHost: String, details: SplitDetails, apk: File) {
+    private fun showInfo(bundleOption: BundleOption, details: SplitDetails, apk: File) {
         val apkFile = ApkFile(apk)
         val info = apkFile.apkMeta
         val splitInfo = details.splits.find { it.splitName == info.splitName } ?: SplitInfo()
@@ -105,15 +122,33 @@ object BundleApksUtil {
             if (splitLibData != null) splitInfo.libData.add(splitLibData)
         }
 
-        RenameTask(apk, splitInfo, splitApkData, apkFileHost).rename(false)
+        RenameTask(apk, splitInfo, splitApkData, bundleOption).rename(false)
     }
 
     private val renameTasks: MutableMap<File, RenameTask?> = mutableMapOf()
 
-    private data class RenameTask(val apk: File, val splitInfo: SplitInfo, val splitApkData: SplitInfo.SplitApkData, val apkFileHost: String) {
+    private class RenameTask(
+        val apk: File,
+        val splitInfo: SplitInfo,
+        val splitApkData: SplitInfo.SplitApkData,
+        bundleOption: BundleOption
+    ) {
+        private val apkFileHost = bundleOption.apkFileHost
+        private val apkNameFormat = bundleOption.fileNameFormat
+        private val params: MutableMap<String, String> = mutableMapOf()
+
+        init {
+            this.params.putAll(bundleOption.fileNameParams)
+        }
+
         fun rename(force: Boolean) {
             if (force || splitInfo.version.contains("@")) {
-                val newApkName = apk.newName(splitInfo.version, splitApkData.md5)
+                params["split"] = splitInfo.splitName
+                params["version"] = splitInfo.version
+                params["abi"] = splitApkData.abi
+                params["md5"] = splitApkData.md5
+
+                val newApkName = apkNameFormat.format(params) + ".apk"
                 splitApkData.url = "$apkFileHost/$newApkName"
                 apk.renameTo(File(apk.parent, newApkName))
                 renameTasks[apk] = null
@@ -278,4 +313,17 @@ fun String.parseUseSplitsFromManifestXml(): Set<String> {
         result = result.next()
     }
     return splits
+}
+
+fun String.format(params: Map<String, String>): String {
+    var s = this
+    params.forEach {
+        s = s.replace("{${it.key}}", it.value)
+    }
+    return s.replace("[-_]+".toRegex(), "-")
+        .replace("(^-)|(-$)".toRegex(), "")
+}
+
+fun String.trimTailSeparator(): String {
+    return replace("/+$".toRegex(), "")
 }

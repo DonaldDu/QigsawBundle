@@ -13,6 +13,8 @@ class BundleApkTask extends DefaultTask {
     @Input
     File baseApks
     @Input
+    boolean isDebug
+    @Input
     boolean log = true
     @Input
     QigsawBundleOption bundleOption
@@ -34,7 +36,8 @@ class BundleApkTask extends DefaultTask {
         println 'bundle to apks ...'
         genSplits(aab)
         genBaseApk(aab)
-        BundleApksUtil.INSTANCE.bundleApks(bundleOption.apkFileHost, apks, baseApks, bundleOption.keepLanguageConfigApks, bundleOption.copyToDirectory)
+        bundleOption.type = isDebug ? bundleOption.debugType : bundleOption.releaseType
+        BundleApksUtil.INSTANCE.bundleApks(bundleOption, apks, baseApks)
     }
 
     private void genSplits(File aab) {

@@ -1,8 +1,7 @@
 package com.dhy.qigsawbundle.plugin
 
-import com.dhy.openusage.Honor
+
 import com.dhy.openusage.OpenUsage
-import com.dhy.openusage.UsingApp
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -34,6 +33,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
             task.apks = new File(task.aabFolder, "${project.name}.apks")
             task.baseApks = new File(task.aabFolder, "base.apks")
             task.bundleOption = project.extensions.qigsawBundleOption
+            task.isDebug = baseVariant.name.contains("debug")
             if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) task.dependsOn('bundle')
             task.setGroup(QIGSAW)
         }
