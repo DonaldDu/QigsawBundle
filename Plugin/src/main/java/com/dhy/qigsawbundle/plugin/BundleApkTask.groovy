@@ -15,6 +15,8 @@ class BundleApkTask extends DefaultTask {
     @Input
     boolean isDebug
     @Input
+    boolean publish
+    @Input
     boolean log = true
     @Input
     QigsawBundleOption bundleOption
@@ -37,6 +39,7 @@ class BundleApkTask extends DefaultTask {
         genSplits(aab)
         genBaseApk(aab)
         bundleOption.type = isDebug ? bundleOption.debugType : bundleOption.releaseType
+        bundleOption.publish = publish
         BundleApksUtil.INSTANCE.bundleApks(bundleOption, apks, baseApks)
     }
 

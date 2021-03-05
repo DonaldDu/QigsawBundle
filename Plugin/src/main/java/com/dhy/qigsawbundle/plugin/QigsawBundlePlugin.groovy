@@ -4,6 +4,7 @@ package com.dhy.qigsawbundle.plugin
 import com.dhy.openusage.OpenUsage
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 
 class QigsawBundlePlugin implements Plugin<Project> {
     private def QIGSAW = "qigsaw-bundle"
@@ -22,6 +23,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
     private void createTask() {
         createBundleApkTask(true)
         createBundleApkTask(false)
+        createPulishApkTask()
     }
 
     private void createBundleApkTask(boolean bundle) {
@@ -34,8 +36,23 @@ class QigsawBundlePlugin implements Plugin<Project> {
             task.baseApks = new File(task.aabFolder, "base.apks")
             task.bundleOption = project.extensions.qigsawBundleOption
             task.isDebug = baseVariant.name.contains("debug")
+            task.publish = bundle
             if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) task.dependsOn('bundle')
             task.setGroup(QIGSAW)
+        }
+    }
+
+    private void createPulishApkTask() {
+        project.extensions.android.applicationVariants.all { baseVariant ->
+            String variantName = baseVariant.name
+            Task task = project.tasks.create("publish${variantName.capitalize()}Apks").doLast {
+                QigsawBundleOption option = project.extensions.qigsawBundleOption
+                option.type = variantName.contains("debug") ? option.debugType : option.releaseType
+                def aabFolder = new File(project.buildDir, option.aabFolder.call(baseVariant))
+                def splits = new File(aabFolder, "splits")
+                BundleApksUtil.publishSplits(option, splits)
+            }
+            task.group = QIGSAW
         }
     }
 

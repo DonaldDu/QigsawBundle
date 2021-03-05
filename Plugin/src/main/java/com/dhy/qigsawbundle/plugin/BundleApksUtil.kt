@@ -55,6 +55,32 @@ object BundleApksUtil {
         if (splits.exists() && bundleOption.copyToDirectory != null) {
             copySplits(splits, File(bundleOption.copyToDirectory))
         }
+        if (bundleOption.publish) publishSplits(bundleOption, splits)
+    }
+
+    @JvmStatic
+    fun publishSplits(bundleOption: BundleOption, splits: File) {
+        val publish = bundleOption.publishTool
+        if (publish != null) {
+            val release = bundleOption.isRelease
+            if (File(publish.toString()).exists()) {//JAR
+                //quote path for which has EMPTY_CHAR, like 'C:\Program Files\test'
+                runCommand("java -jar $publish -dir \"$splits\" -release $release")
+            } else {//ClassName
+                publishSplitsWithMain(publish.toString(), splits, release)
+            }
+        }
+    }
+
+    private fun publishSplitsWithMain(className: String, dir: File, release: Boolean) {
+        try {
+            val params = arrayOf("-dir", dir.absolutePath, "-release", release.toString())
+            val publish = Class.forName(className)
+            val m = publish.getDeclaredMethod("main", Array<String>::class.java)
+            m.invoke(null, params)
+        } catch (e: ClassNotFoundException) {
+            println("publishTool must be JAR_PATH OR CLASS_NAME: $className")
+        }
     }
 
     private fun copySplits(sourceFolder: File, destinationFolder: File) {

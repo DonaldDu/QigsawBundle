@@ -11,13 +11,22 @@ public class BundleOption {
     public boolean keepLanguageConfigApks = false;
 
     transient String type;
-    public String debugType;
-    public String releaseType;
+    public String debugType = "debug";
+    public String releaseType = "release";
+    /**
+     * JAR file or className, invoke with "-dir $splitsFolder -release {true:release, false:debug}"
+     */
+    public Object publishTool;
+    transient boolean publish;
     public String copyToDirectory;
 
     transient Map<String, String> fileNameParams;
 
     public String format() {
         return BundleApksUtilKt.format(fileNameFormat, fileNameParams);
+    }
+
+    public boolean isRelease() {
+        return type != null && type.equals(releaseType);
     }
 }

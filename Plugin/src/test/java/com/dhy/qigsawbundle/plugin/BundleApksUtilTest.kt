@@ -12,9 +12,11 @@ class BundleApksUtilTest {
         val baseApks = File(folder, "base.apks")
         if (apks.exists() && baseApks.exists()) {
             val bundleOption = BundleOption()
-            bundleOption.type = "debug"
+            bundleOption.type = "0"
+            bundleOption.fileNameFormat = "{appId}-{split}-{abi}-t{type}-v{version}-{md5}"
             bundleOption.apkFileHost = "http://www.qigsaw.com/"
-
+            bundleOption.publishTool = "D:\\Donald\\Qigsaw2Test\\publish\\build\\libs\\publish-all.jar"
+//            bundleOption.publishTool = "com.dhy.qigsawbundle.plugin.DemoPublish"
             BundleApksUtil.bundleApks(bundleOption, apks, baseApks)
         }
     }
