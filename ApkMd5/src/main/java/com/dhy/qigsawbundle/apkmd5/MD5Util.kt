@@ -1,6 +1,7 @@
 package com.dhy.qigsawbundle.apkmd5
 
 import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -14,6 +15,24 @@ fun File.apkMd5(): String {
         val name = names.next()
         digest.update(name.toByteArray())
         digest.update(fs.getValue(name).toByteArray())
+    }
+    return digest.digest().toHex()
+}
+
+fun File.md5(): String {
+    val digest = MessageDigest.getInstance("MD5")
+    val bufferSize = 1024 * 1024 * 2//2MB
+    if (length() > bufferSize) {
+        val buffer = ByteArray(bufferSize)
+        val inputStream = FileInputStream(this)
+        while (true) {
+            val size = inputStream.read(buffer)
+            if (size > 0) digest.update(buffer, 0, size)
+            else break
+        }
+        inputStream.close()
+    } else {
+        digest.update(readBytes())
     }
     return digest.digest().toHex()
 }
