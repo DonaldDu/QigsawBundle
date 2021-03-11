@@ -10,7 +10,6 @@ import net.dongliu.apk.parser.struct.AndroidConstants
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.util.zip.ZipFile
@@ -47,7 +46,7 @@ object BundleApksUtil {
         fileNameParams["split"] = ""
         fileNameParams["abi"] = ""
         fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
-        fileNameParams["md5"] = FileInputStream(infoJsonFile).use { it.md5() }
+        fileNameParams["md5"] = infoJsonFile.md5()
         val newInfoJsonFile = File(splits, bundleOption.format() + ".json")
         FileUtils.copyFile(infoJsonFile, newInfoJsonFile)
         infoJsonFile.delete()
