@@ -78,7 +78,5 @@ fun InputStream.md5(): String {
 
 fun ByteArray.toHex(): String {
     val hex = BigInteger(1, this).toString(16)
-    val sb = StringBuilder(hex)
-    while (sb.length < size * 2) sb.insert(0, '0')
-    return sb.toString()
+    return hex.padStart(size * 2, '0')
 }
