@@ -19,11 +19,12 @@ fun File.apkMd5(): String {
     return digest.digest().toHex()
 }
 
+private val BUFFER_SIZE = DataSizeUnit.MEBIBYTES.toBytes(2).toInt()
+
 fun File.md5(): String {
     val digest = MessageDigest.getInstance("MD5")
-    val bufferSize = 1024 * 1024 * 2//2MB
-    if (length() > bufferSize) {
-        val buffer = ByteArray(bufferSize)
+    if (length() > BUFFER_SIZE) {
+        val buffer = ByteArray(BUFFER_SIZE)
         val inputStream = FileInputStream(this)
         while (true) {
             val size = inputStream.read(buffer)
@@ -42,14 +43,13 @@ fun File.zipDetails(): MutableMap<String, String> {
     val zip = ZipFile(this)
     val fs = zip.entries()
     var buffer: ByteArray? = null
-    val bufferSize = 1024 * 1024 * 2//2MB
     while (fs.hasMoreElements()) {
         val e = fs.nextElement()
         if (!e.name.endsWith("/")) {
-            if (e.size <= bufferSize) {
+            if (e.size <= BUFFER_SIZE) {
                 details[e.name] = zip.getInputStream(e).md5()
             } else {
-                if (buffer == null) buffer = ByteArray(bufferSize)
+                if (buffer == null) buffer = ByteArray(BUFFER_SIZE)
                 details[e.name] = zip.getInputStream(e).md5(buffer)
             }
         }
