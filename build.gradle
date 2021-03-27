@@ -25,4 +25,4 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-apply from: "https://gitee.com/DonaldDu/OpenGradleScript/raw/master/publishToMavenLocal.gradle"
+apply from: "https://gitee.com/DonaldDu/OpenGradleScript/raw/master/mavenPublish.gradle"
