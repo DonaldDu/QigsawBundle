@@ -13,7 +13,7 @@ compileGroovy {
     classes.dependsOn compileGroovy
 }
 
-publishGAV("com.gitee.DonaldDu.QigsawBundle:Plugin:$libV")
+mavenPublish("com.gitee.DonaldDu.QigsawBundle:Plugin:$libV")
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
