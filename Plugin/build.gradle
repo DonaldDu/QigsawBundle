@@ -17,7 +17,6 @@ mavenPublish("com.gitee.DonaldDu.QigsawBundle:Plugin:$libV")
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-//    implementation("com.iqiyi.android.qigsaw:gradle-plugin:1.4.1-hotfix01")
     implementation project(path: ':ApkMd5')
 
     testImplementation "commons-codec:commons-codec:1.15"

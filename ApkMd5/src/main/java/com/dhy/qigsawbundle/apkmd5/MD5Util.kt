@@ -1,5 +1,6 @@
 package com.dhy.qigsawbundle.apkmd5
 
+import net.dongliu.apk.parser.ApkFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -38,14 +39,24 @@ fun File.md5(): String {
     return digest.digest().toHex()
 }
 
-fun File.zipDetails(): MutableMap<String, String> {
+private fun File.manifestXmlWithoutVersion(): String {
+    val apkFile = ApkFile(this)
+    var manifestXml = apkFile.manifestXml
+    apkFile.close()
+    manifestXml = manifestXml.replace("android:versionCode=\"\\d+\"".toRegex(), "")
+    manifestXml = manifestXml.replace("android:versionName=\"[^\"]+\"".toRegex(), "")
+    return manifestXml
+}
+
+private fun File.zipDetails(): MutableMap<String, String> {
     val details: MutableMap<String, String> = mutableMapOf()
+    details["AndroidManifest.xml"] = manifestXmlWithoutVersion().md5()
     val zip = ZipFile(this)
     val fs = zip.entries()
     var buffer: ByteArray? = null
     while (fs.hasMoreElements()) {
         val e = fs.nextElement()
-        if (!e.name.endsWith("/")) {
+        if (e.name.isValidApkEntry()) {
             if (e.size <= BUFFER_SIZE) {
                 details[e.name] = zip.getInputStream(e).md5()
             } else {
@@ -56,6 +67,14 @@ fun File.zipDetails(): MutableMap<String, String> {
     }
     zip.close()
     return details
+}
+
+private fun String.isValidApkEntry(): Boolean {
+    return this != "AndroidManifest.xml"
+            && this != "META-INF/BNDLTOOL.RSA"
+            && this != "META-INF/BNDLTOOL.SF"
+            && this != "META-INF/MANIFEST.MF"
+            && !endsWith("/")
 }
 
 fun InputStream.md5(buffer: ByteArray): String {
@@ -73,6 +92,12 @@ fun InputStream.md5(): String {
     val digest = MessageDigest.getInstance("MD5")
     digest.update(readBytes())
     close()
+    return digest.digest().toHex()
+}
+
+fun String.md5(): String {
+    val digest = MessageDigest.getInstance("MD5")
+    digest.update(toByteArray())
     return digest.digest().toHex()
 }
 

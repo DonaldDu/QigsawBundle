@@ -9,5 +9,6 @@ java {
 }
 mavenPublish("com.gitee.DonaldDu.QigsawBundle:ApkMD5:$libV")
 dependencies {
-//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'com.gitee.DonaldDu:apk-parser:2.6.10.3'
 }
