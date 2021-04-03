@@ -23,7 +23,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
     private void createTask() {
         createBundleApkTask(true)
         createBundleApkTask(false)
-        createPulishApkTask()
+        createPublishApkTask()
     }
 
     private void createBundleApkTask(boolean bundle) {
@@ -37,12 +37,15 @@ class QigsawBundlePlugin implements Plugin<Project> {
             task.bundleOption = project.extensions.qigsawBundleOption
             task.isDebug = baseVariant.name.contains("debug")
             task.publish = bundle
-            if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) task.dependsOn('bundle')
+            if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) {
+                if (task.isDebug) task.dependsOn('bundleDebug')
+                else task.dependsOn('bundleRelease')
+            }
             task.setGroup(QIGSAW)
         }
     }
 
-    private void createPulishApkTask() {
+    private void createPublishApkTask() {
         project.extensions.android.applicationVariants.all { baseVariant ->
             String variantName = baseVariant.name
             Task task = project.tasks.create("publish${variantName.capitalize()}Apks").doLast {
