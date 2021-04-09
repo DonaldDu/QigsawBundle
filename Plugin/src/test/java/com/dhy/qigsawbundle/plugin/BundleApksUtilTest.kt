@@ -6,18 +6,39 @@ import java.io.File
 
 class BundleApksUtilTest {
     @Test
+    fun notGenBaseApktest() {
+        val folder = File(projectRootDir, "tests")
+        val apks = File(folder, "app.apks")
+        val baseApks = File(folder, "base.apks")
+        if (apks.exists()) {
+            val bundleOption = BundleOption()
+            bundleOption.genBaseApk = false
+            bundleOption.type = "0"
+            bundleOption.fileNameFormat = "{appId}-{split}-{abi}-t{type}-v{version}-{md5}"
+            bundleOption.apkFileHost = "http://www.qigsaw.com/"
+            BundleApksUtil.bundleApks(bundleOption, apks, baseApks)
+            val splits = File(folder, "splits")
+            Assert.assertEquals(null, splits.listFiles()?.find { it.name.contains("-base-") })
+        }
+    }
+
+    @Test
     fun test() {
         val folder = File(projectRootDir, "tests")
         val apks = File(folder, "app.apks")
         val baseApks = File(folder, "base.apks")
         if (apks.exists() && baseApks.exists()) {
             val bundleOption = BundleOption()
+            bundleOption.genBaseApk = true
             bundleOption.type = "0"
             bundleOption.fileNameFormat = "{appId}-{split}-{abi}-t{type}-v{version}-{md5}"
             bundleOption.apkFileHost = "http://www.qigsaw.com/"
 //            bundleOption.publishTool = "D:\\Donald\\Qigsaw2Test\\publish\\build\\libs\\publish-all.jar"
 //            bundleOption.publishTool = "com.dhy.qigsawbundle.plugin.DemoPublish"
             BundleApksUtil.bundleApks(bundleOption, apks, baseApks)
+
+            val splits = File(folder, "splits")
+            Assert.assertEquals(true, splits.listFiles()?.find { it.name.contains("-base-") }?.exists())
         }
     }
 

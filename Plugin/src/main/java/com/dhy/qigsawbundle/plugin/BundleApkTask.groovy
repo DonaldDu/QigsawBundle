@@ -37,7 +37,7 @@ class BundleApkTask extends DefaultTask {
         }
         println 'bundle to apks ...'
         genSplits(aab)
-        genBaseApk(aab)
+        if (bundleOption.genBaseApk) genBaseApk(aab)
         bundleOption.type = isDebug ? bundleOption.debugType : bundleOption.releaseType
         bundleOption.publish = publish
         BundleApksUtil.INSTANCE.bundleApks(bundleOption, apks, baseApks)

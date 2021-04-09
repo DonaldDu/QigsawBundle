@@ -30,7 +30,7 @@ abstract class BaseCompatBundle : ICompatBundle {
     override fun disableComponentInfoManager(): Boolean = true
 }
 
-private val Context.defaultQigsawSplitVersionFile: File
+val Context.defaultQigsawSplitVersionFile: File
     get() {
         return File(filesDir, "defaultQigsawSplitVersion.json")
     }

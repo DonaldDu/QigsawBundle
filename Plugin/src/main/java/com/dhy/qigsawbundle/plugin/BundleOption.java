@@ -9,6 +9,7 @@ public class BundleOption {
     public String apkFileHost;
     public String fileNameFormat = "{appId}-{split}-{abi}-{type}-v{version}-{md5}";
     public boolean keepLanguageConfigApks = false;
+    public boolean genBaseApk = false;
 
     transient String type;
     public String debugType = "debug";
