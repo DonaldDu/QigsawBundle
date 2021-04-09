@@ -37,7 +37,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
             task.bundleOption = project.extensions.qigsawBundleOption
             task.isDebug = baseVariant.name.contains("debug")
             task.publish = bundle
-            if (bundle && project.hasProperty('BUNDLE_TOOL_PATH')) {
+            if (project.hasProperty('BUNDLE_TOOL_PATH')) {
                 if (task.isDebug) task.dependsOn('bundleDebug')
                 else task.dependsOn('bundleRelease')
             }
