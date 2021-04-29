@@ -6,11 +6,11 @@ import org.gradle.api.Project
 class AutoPluginDelegate {
 
     void apply(Project baseProject) {
-        baseProject.rootProject.subprojects { project ->
-            project.afterEvaluate {
-                if (project.plugins.hasPlugin("com.android.dynamic-feature")) {
-                    insertModuleVersion(project)
-                }
+        baseProject.rootProject.subprojects { Project project ->
+            if (project.hasProperty('android')) {
+                if (project.plugins.hasPlugin("com.android.dynamic-feature")) insertModuleVersion(project)
+            } else project.afterEvaluate {
+                if (project.plugins.hasPlugin("com.android.dynamic-feature")) insertModuleVersion(project)
             }
         }
 
