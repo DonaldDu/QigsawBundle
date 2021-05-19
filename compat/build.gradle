@@ -33,9 +33,12 @@ android {
 }
 mavenPublish("com.gitee.DonaldDu.QigsawBundle:Compat:$libV")
 dependencies {
+    implementation 'androidx.annotation:annotation:1.2.0'
     implementation project(path: ':ApkMd5')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     compileOnly "com.gitee.DonaldDu.Qigsaw:splitcore:2.0.2"
+    implementation 'com.google.code.gson:gson:2.8.6'
+    api "com.github.DonaldDu.DynamicProviderSwitch:Lib:$providerSwitchV"
 }

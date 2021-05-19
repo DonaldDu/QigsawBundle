@@ -4,6 +4,7 @@ import android.content.Context
 import com.dhy.qigsawbundle.apkmd5.DataSizeUnit
 import com.dhy.qigsawbundle.apkmd5.apkMd5
 import com.dhy.qigsawbundle.apkmd5.md5
+import com.google.gson.Gson
 import com.iqiyi.android.qigsaw.core.Qigsaw
 import com.iqiyi.android.qigsaw.core.common.ICompatBundle
 import java.io.File
@@ -43,10 +44,36 @@ private fun setDefaultSplitVersion(context: Context, file: File) {
 }
 
 fun Context.updateQigsawSplits(splitVersionInfo: File) {
-    if (defaultQigsawSplitVersionFile.exists()) {
+    val defaultFile = defaultQigsawSplitVersionFile
+    if (defaultFile.exists()) {
+        clearUpdate(defaultFile, splitVersionInfo)
         val v = System.currentTimeMillis().toString()
         Qigsaw.updateSplits(this, v, splitVersionInfo.absolutePath)
     } else {
         setDefaultSplitVersion(this, splitVersionInfo)
     }
+}
+
+/**
+ * keep only updated split in SplitDetails.updateSplits[]
+ * */
+internal fun clearUpdate(oldF: File, newF: File) {
+    val gson = Gson()
+    val old = gson.fromJson(oldF.readText(), SplitDetails::class.java)
+    val new = gson.fromJson(newF.readText(), SplitDetails::class.java)
+    val updateSplits: MutableList<String> = mutableListOf()
+    new.updateSplits.forEach { splitName ->
+        val oldSplit = old.splits.find { it.splitName == splitName }
+        val newSplit = new.splits.find { it.splitName == splitName }
+        if (oldSplit != null && newSplit != null) {
+            val oldMd5 = oldSplit.apkData.map { it.md5 }
+            val newMd5 = newSplit.apkData.map { it.md5 }
+            if (!oldMd5.containsAll(newMd5)) updateSplits.add(splitName)
+        } else updateSplits.add(splitName)
+    }
+    if (new.updateSplits != updateSplits) {
+        new.updateSplits = updateSplits
+        newF.writeBytes(gson.toJson(new).toByteArray())
+    }
+    newF.copyTo(oldF, true)
 }
