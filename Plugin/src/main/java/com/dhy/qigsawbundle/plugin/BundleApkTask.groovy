@@ -37,14 +37,14 @@ class BundleApkTask extends DefaultTask {
         }
         println 'bundle to apks ...'
         genSplits(aab)
-        if (bundleOption.genBaseApk) genBaseApk(aab)
+        genBaseApk(aab)
         bundleOption.type = isDebug ? bundleOption.debugType : bundleOption.releaseType
         bundleOption.publish = publish
         BundleApksUtil.INSTANCE.bundleApks(bundleOption, apks, baseApks)
     }
 
     private void genSplits(File aab) {
-        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --output=$apks "
+        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --optimize-for=abi --output=$apks "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }

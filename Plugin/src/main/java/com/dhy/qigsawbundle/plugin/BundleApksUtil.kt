@@ -22,14 +22,9 @@ object BundleApksUtil {
         splitVersionCode = System.currentTimeMillis() / 1000
         val splits = File(apks.parent, "splits")
         apks.unzipSplits(splits)
-        var universalApk: File? = null
-        val app = if (bundleOption.genBaseApk) {
-            universalApk = baseApks.unzipUniversalApk()
-            ApkFile(universalApk).meta
-        } else {
-            val baseApk = splits.listFiles()!!.find { it.name == "base-master.apk" }!!
-            ApkFile(baseApk).meta
-        }
+        val universalApk = baseApks.unzipUniversalApk()
+        val app = ApkFile(universalApk).meta
+
         clearSplitApks(bundleOption.keepLanguageConfigApks, splits)
 
         val fileNameParams: MutableMap<String, String> = mutableMapOf()
@@ -39,11 +34,11 @@ object BundleApksUtil {
         fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
         fileNameParams["type"] = bundleOption.type ?: ""
         fileNameParams["split"] = "base"
-        fileNameParams["md5"] = universalApk?.apkMd5() ?: ""
+        fileNameParams["md5"] = universalApk.apkMd5()
         bundleOption.fileNameParams = fileNameParams
         bundleOption.apkFileHost = bundleOption.apkFileHost.trimTailSeparator()
         val baseApk = File(splits, bundleOption.format() + ".apk")
-        universalApk?.renameTo(baseApk)
+        universalApk.renameTo(baseApk)
 
         val splitApks = splits.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }
         val infoJsonFile = genSplitInfo(bundleOption, app.versionName, splitApks)

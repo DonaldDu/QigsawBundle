@@ -6,10 +6,9 @@ public class BundleOption {
     /**
      * {host}/{apkName}.apk -> "http://192.168.80.15/dynamicfeature-master-v1.1@2.apk"
      */
-    public String apkFileHost;
+    public String apkFileHost = "http://www.apk.com";
     public String fileNameFormat = "{appId}-{split}-{abi}-{type}-v{version}-{md5}";
     public boolean keepLanguageConfigApks = false;
-    public boolean genBaseApk = false;
 
     transient String type;
     public String debugType = "debug";
