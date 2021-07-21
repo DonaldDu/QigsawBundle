@@ -43,12 +43,15 @@ private fun setDefaultSplitVersion(context: Context, file: File) {
     file.delete()
 }
 
+/**
+ * auto delete temp file of splitVersionInfo
+ * */
 fun Context.updateQigsawSplits(splitVersionInfo: File) {
     val defaultFile = defaultQigsawSplitVersionFile
     if (defaultFile.exists()) {
         clearUpdate(defaultFile, splitVersionInfo)
         val v = System.currentTimeMillis().toString()
-        Qigsaw.updateSplits(this, v, splitVersionInfo.absolutePath)
+        Qigsaw.updateSplits(this, v, splitVersionInfo.absolutePath)//auto delete temp file of splitVersionInfo
     } else {
         setDefaultSplitVersion(this, splitVersionInfo)
     }
