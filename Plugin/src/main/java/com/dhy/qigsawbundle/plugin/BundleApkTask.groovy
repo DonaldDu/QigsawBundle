@@ -3,14 +3,16 @@ package com.dhy.qigsawbundle.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 class BundleApkTask extends DefaultTask {
     @Input
-    File aabFolder
-    @Input
+    String aabFolderPath
+    @OutputFile
     File apks
-    @Input
+    @OutputFile
     File baseApks
     @Input
     boolean isDebug
@@ -18,7 +20,7 @@ class BundleApkTask extends DefaultTask {
     boolean publish
     @Input
     boolean log = true
-    @Input
+    @Internal
     QigsawBundleOption bundleOption
     private String bundleTool
 
@@ -64,7 +66,7 @@ class BundleApkTask extends DefaultTask {
     }
 
     private File findAAB() {
-        def aabs = aabFolder.listFiles().findAll { it.name.endsWith('.aab') }
+        def aabs = new File(aabFolderPath).listFiles().findAll { it.name.endsWith('.aab') }
         if (aabs.size() > 1) throw new IllegalArgumentException("More than one aab files were found, please delete the errors then restart task")
         else if (aabs.size() == 1) return aabs.first()
         else return null

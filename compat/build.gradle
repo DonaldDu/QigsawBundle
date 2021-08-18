@@ -31,7 +31,7 @@ android {
         jvmTarget = '1.8'
     }
 }
-mavenPublish("com.gitee.DonaldDu.QigsawBundle:Compat:$libV")
+mavenPublish("com.github.DonaldDu.QigsawBundle:Compat:$libV")
 dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
     implementation project(path: ':ApkMd5')

@@ -31,9 +31,9 @@ class QigsawBundlePlugin implements Plugin<Project> {
             QigsawBundleOption option = project.qigsawBundleOption
             def name = bundle ? "bundle" : "gen"
             BundleApkTask task = project.tasks.create("$name${baseVariant.name.capitalize()}Apks", BundleApkTask)
-            task.aabFolder = new File(project.buildDir, option.aabFolder.call(baseVariant))
-            task.apks = new File(task.aabFolder, "${project.name}.apks")
-            task.baseApks = new File(task.aabFolder, "base.apks")
+            task.aabFolderPath = new File(project.buildDir, option.aabFolder.call(baseVariant)).absolutePath
+            task.apks = new File(task.aabFolderPath, "${project.name}.apks")
+            task.baseApks = new File(task.aabFolderPath, "base.apks")
             task.bundleOption = project.extensions.qigsawBundleOption
             task.isDebug = baseVariant.name.contains("debug")
             task.publish = bundle

@@ -7,7 +7,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
 }
-mavenPublish("com.gitee.DonaldDu.QigsawBundle:ApkMD5:$libV")
+mavenPublish("com.github.DonaldDu.QigsawBundle:ApkMD5:$libV")
 dependencies {
     testImplementation 'junit:junit:4.13.2'
     implementation 'com.gitee.DonaldDu:apk-parser:2.6.10.3'
