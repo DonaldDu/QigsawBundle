@@ -9,12 +9,13 @@ import org.gradle.api.Task
 class QigsawBundlePlugin implements Plugin<Project> {
     private def QIGSAW = "qigsaw-bundle"
     private Project project
-    private AutoPluginDelegate autoPlugin = new AutoPluginDelegate()
 
     @Override
     void apply(Project project) {
         this.project = project
-        autoPlugin.apply(project)
+        project.with {
+            apply plugin: 'dynamic-provider-switch'
+        }
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
         createTask()
         initOpenUsage()
@@ -60,10 +61,16 @@ class QigsawBundlePlugin implements Plugin<Project> {
     }
 
     private void initOpenUsage() {
-        project.afterEvaluate {
-            def name = 'QigsawBundle'
-            def url = 'https://gitee.com/DonaldDu/QigsawBundle'
-            OpenUsage.report(project, name, url)
+        if (project.hasProperty('android')) {
+            report()
+        } else project.afterEvaluate {
+            report()
         }
+    }
+
+    private void report() {
+        def name = 'QigsawBundle'
+        def url = 'https://gitee.com/DonaldDu/QigsawBundle'
+        OpenUsage.report(project, name, url)
     }
 }

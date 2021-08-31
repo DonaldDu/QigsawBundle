@@ -5,33 +5,29 @@ import com.dhy.qigsawbundle.apkmd5.md5
 import com.google.gson.Gson
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkMeta
-import net.dongliu.apk.parser.parser.ResourceTableParser
-import net.dongliu.apk.parser.struct.AndroidConstants
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.nio.ByteBuffer
 import java.util.zip.ZipFile
 
 object BundleApksUtil {
-    private var splitVersionCode = 0L
+    private var splitVersion = ""
 
     @JvmStatic
     fun bundleApks(bundleOption: BundleOption, apks: File, baseApks: File) {
-        splitVersionCode = System.currentTimeMillis() / 1000
         val splits = File(apks.parent, "splits")
         apks.unzipSplits(splits)
         val universalApk = baseApks.unzipUniversalApk()
         val app = ApkFile(universalApk).meta
 
         clearSplitApks(bundleOption.keepLanguageConfigApks, splits)
-
+        splitVersion = "${app.versionName}@${app.versionCode}"
         val fileNameParams: MutableMap<String, String> = mutableMapOf()
         fileNameParams["appId"] = app.packageName
         fileNameParams["split"] = ""
         fileNameParams["abi"] = ""
-        fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
+        fileNameParams["version"] = splitVersion
         fileNameParams["type"] = bundleOption.type ?: ""
         fileNameParams["split"] = "base"
         fileNameParams["md5"] = universalApk.apkMd5()
@@ -124,12 +120,10 @@ object BundleApksUtil {
             splitInfo.builtIn = false
             splitInfo.onDemand = true
             splitInfo.apkData = mutableListOf()
-            //用bundletool打包出来的，Split版本信息都是base的，所以用打包时间作为Split版本号，以保证更新。
-            //运行时会根据md5来判断是否更新，如果未更新，本地为使用旧版本号（自动降低特定组件版本号）。
-            splitInfo.version = splitVersionCode.toString()
+            //用bundletool打包出来的，Split版本信息都是base的
+            splitInfo.version = splitVersion
         }
-        val moduleVersion = apkFile.parseModuleVersion()
-        if (moduleVersion != null) splitInfo.version = moduleVersion
+
         apkFile.close()
 
         splitInfo.initUseSplits(apkFile.manifestXml)
@@ -273,23 +267,6 @@ object BundleApksUtil {
         inputStream.close()
         if (code != 0) throw Exception(sb.toString())
     }
-}
-
-fun ApkFile.parseModuleVersion(): String? {
-    val data = getFileData(AndroidConstants.RESOURCE_FILE) ?: return null
-    val buffer = ByteBuffer.wrap(data)
-    val resourceTableParser = ResourceTableParser(buffer)
-    resourceTableParser.parse()
-    val stringPool = resourceTableParser.resourceTable.stringPool
-    try {
-        val moduleVersion = "module_version_"
-        for (i in 0..Int.MAX_VALUE) {
-            val v = stringPool[i]
-            if (v.startsWith(moduleVersion)) return v.substring(moduleVersion.length)//module_version_1.1@2
-        }
-    } catch (e: Exception) {
-    }
-    return null
 }
 
 fun File.unzipSplits(folder: File) {
