@@ -9,6 +9,7 @@ import com.iqiyi.android.qigsaw.core.Qigsaw
 import com.iqiyi.android.qigsaw.core.common.ICompatBundle
 import java.io.File
 import java.io.InputStream
+import java.util.*
 
 abstract class BaseCompatBundle : ICompatBundle {
     override fun readDefaultSplitVersionContent(context: Context, fileName: String): String? {
@@ -31,15 +32,31 @@ abstract class BaseCompatBundle : ICompatBundle {
     override fun disableComponentInfoManager(): Boolean = true
 }
 
+private val qigsawId by lazy {
+    val c = ServiceLoader.load(ICompatBundle::class.java).first()
+    try {
+        val clazz = c.qigsawConfigClass()
+        val f = clazz.getDeclaredField("QIGSAW_ID")
+        if (!f.isAccessible) f.isAccessible = true
+        f.get(null) as String
+    } catch (e: Throwable) {
+        ""
+    }
+}
+
+/**
+ * 默认配置文件与qigsawId对应，qigsawId变更时，默认配置自动无效
+ * */
 val Context.defaultQigsawSplitVersionFile: File
     get() {
-        return File(filesDir, "defaultQigsawSplitVersion.json")
+        val qigsaw = getDir("qigsaw", Context.MODE_PRIVATE)
+        val folder = File(qigsaw, qigsawId)
+        return File(folder, "splits.json")
     }
 
 private fun setDefaultSplitVersion(context: Context, file: File) {
     val info = context.defaultQigsawSplitVersionFile
-    if (!info.exists()) info.createNewFile()
-    info.writeBytes(file.readBytes())
+    info.writeBytes(file.readBytes())//auto createNewFile
     file.delete()
 }
 
