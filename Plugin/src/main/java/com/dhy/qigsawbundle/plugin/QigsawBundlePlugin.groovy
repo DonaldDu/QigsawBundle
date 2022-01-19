@@ -1,6 +1,5 @@
 package com.dhy.qigsawbundle.plugin
 
-
 import com.dhy.openusage.OpenUsage
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -15,6 +14,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
         this.project = project
         project.with {
             apply plugin: 'dynamic-provider-switch'
+            apply plugin: 'qigsaw-bundle-asm'
         }
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
         createTask()

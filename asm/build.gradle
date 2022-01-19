@@ -1,0 +1,16 @@
+apply plugin: 'kotlin'
+apply plugin: 'java'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+compileKotlin {
+    kotlinOptions { jvmTarget = "1.8" }
+}
+mavenPublish("com.github.DonaldDu.QigsawBundle:asm:$libV")
+dependencies {
+    implementation gradleApi()
+    compileOnly 'com.android.tools.build:gradle:7.0.4'
+    testImplementation 'junit:junit:4.13.2'
+}
