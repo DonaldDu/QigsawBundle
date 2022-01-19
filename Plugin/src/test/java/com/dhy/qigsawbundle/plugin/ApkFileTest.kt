@@ -15,14 +15,4 @@ class ApkFileTest {
             apkFile.close()
         }
     }
-
-    @Test
-    fun parseModuleVersion() {
-        val apk = File("C:\\datas\\Qigsaw2Test\\java\\build\\outputs\\apk\\debug\\java-debug.apk")
-        if (apk.exists()) {
-            val apkFile = ApkFile(apk)
-            println(apkFile.parseModuleVersion())
-            apkFile.close()
-        }
-    }
 }
