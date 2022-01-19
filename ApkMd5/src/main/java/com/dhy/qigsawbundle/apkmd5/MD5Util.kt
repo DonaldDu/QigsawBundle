@@ -50,31 +50,23 @@ private fun File.manifestXmlWithoutVersion(): String {
 
 private fun File.zipDetails(): MutableMap<String, String> {
     val details: MutableMap<String, String> = mutableMapOf()
-    details["AndroidManifest.xml"] = manifestXmlWithoutVersion().md5()
-    val zip = ZipFile(this)
-    val fs = zip.entries()
-    var buffer: ByteArray? = null
-    while (fs.hasMoreElements()) {
-        val e = fs.nextElement()
-        if (e.name.isValidApkEntry()) {
-            if (e.size <= BUFFER_SIZE) {
-                details[e.name] = zip.getInputStream(e).md5()
-            } else {
-                if (buffer == null) buffer = ByteArray(BUFFER_SIZE)
-                details[e.name] = zip.getInputStream(e).md5(buffer)
+    val bytes = readZipEntryBytes("META-INF/MANIFEST.MF")
+
+    val mf = String(bytes)
+    var name = ""
+    val keyName = "Name: "
+    val keyDigest = "SHA"// SHA1-Digest, SHA-256-Digest
+    mf.split("\r\n")
+        .filter { it.isNotEmpty() }
+        .forEach { line ->
+            if (line.startsWith(keyName)) {
+                name = line.substring(keyName.length)
+            } else if (line.startsWith(keyDigest)) {
+                details[name] = line.substring(line.indexOf(":") + 2)// 'SHA-256-Digest: '
             }
         }
-    }
-    zip.close()
+    details["AndroidManifest.xml"] = manifestXmlWithoutVersion().md5()
     return details
-}
-
-private fun String.isValidApkEntry(): Boolean {
-    return this != "AndroidManifest.xml"
-            && this != "META-INF/BNDLTOOL.RSA"
-            && this != "META-INF/BNDLTOOL.SF"
-            && this != "META-INF/MANIFEST.MF"
-            && !endsWith("/")
 }
 
 fun InputStream.md5(buffer: ByteArray): String {
@@ -104,4 +96,10 @@ fun String.md5(): String {
 fun ByteArray.toHex(): String {
     val hex = BigInteger(1, this).toString(16)
     return hex.padStart(size * 2, '0')
+}
+
+fun File.readZipEntryBytes(name: String): ByteArray {//  lib/x86/libhello-jni.so
+    return ZipFile(this).use { zip ->
+        zip.getInputStream(zip.getEntry(name)).use { it.readBytes() }
+    }
 }
