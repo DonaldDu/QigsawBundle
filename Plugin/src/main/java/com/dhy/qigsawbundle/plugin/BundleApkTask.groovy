@@ -46,23 +46,23 @@ class BundleApkTask extends DefaultTask {
     }
 
     private void genSplits(File aab) {
-        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --optimize-for=abi --output=$apks "
+        def cmd = "java -jar $bundleTool build-apks --bundle=${aab.name} --output=${apks.name} --optimize-for=abi --overwrite "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }
         println 'gen Split apks ...'
         if (log) println 'cmd: ' + cmd
-        BundleApksUtil.INSTANCE.runCommand(cmd)
+        BundleApksUtil.INSTANCE.runCommand(cmd, aab.parentFile)
     }
 
     private void genBaseApk(File aab) {
-        def cmd = "java -jar $bundleTool build-apks --bundle=$aab --overwrite --output=$baseApks --mode=universal --modules=base "
+        def cmd = "java -jar $bundleTool build-apks --bundle=${aab.name} --output=${baseApks.name} --mode=universal --modules=base --overwrite "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }
         println 'gen base apk ...'
         if (log) println 'cmd: ' + cmd
-        BundleApksUtil.INSTANCE.runCommand(cmd)
+        BundleApksUtil.INSTANCE.runCommand(cmd, aab.parentFile)
     }
 
     private File findAAB() {

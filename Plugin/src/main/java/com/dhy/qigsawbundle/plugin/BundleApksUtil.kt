@@ -251,8 +251,8 @@ object BundleApksUtil {
             return substring(indexOf('/') + 1, lastIndexOf('/'))
         }
 
-    fun runCommand(cmd: String) {
-        val process = Runtime.getRuntime().exec(cmd)
+    fun runCommand(cmd: String, dir: File? = null) {
+        val process = Runtime.getRuntime().exec(cmd, null, dir)
         val code = process.waitFor()
         val inputStream = if (code == 0) process.inputStream else process.errorStream
         val reader = BufferedReader(InputStreamReader(inputStream))

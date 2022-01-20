@@ -17,8 +17,21 @@ class QigsawBundlePlugin implements Plugin<Project> {
             apply plugin: 'qigsaw-bundle-asm'
         }
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
+        insertBundleParams()
         createTask()
         initOpenUsage()
+    }
+
+    private void insertBundleParams() {
+        project.afterEvaluate {
+            project.with {
+                android {
+                    defaultConfig {
+                        buildConfigField "String", 'dynamicFeatures', quote(dynamicFeatures.join(','))
+                    }
+                }
+            }
+        }
     }
 
     private void createTask() {
@@ -32,6 +45,7 @@ class QigsawBundlePlugin implements Plugin<Project> {
             QigsawBundleOption option = project.qigsawBundleOption
             def name = bundle ? "bundle" : "gen"
             BundleApkTask task = project.tasks.create("$name${baseVariant.name.capitalize()}Apks", BundleApkTask)
+            task.log = option.log
             task.aabFolderPath = new File(project.buildDir, option.aabFolder.call(baseVariant)).absolutePath
             task.apks = new File(task.aabFolderPath, "${project.name}.apks")
             task.baseApks = new File(task.aabFolderPath, "base.apks")
@@ -73,4 +87,6 @@ class QigsawBundlePlugin implements Plugin<Project> {
         def url = 'https://gitee.com/DonaldDu/QigsawBundle'
         OpenUsage.report(project, name, url)
     }
+
+    private static String quote(String s) { return "\"$s\"" }
 }
