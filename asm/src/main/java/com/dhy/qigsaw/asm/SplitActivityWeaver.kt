@@ -32,7 +32,6 @@ internal class ActivityClassVisitor(mv: ClassVisitor) : ClassVisitor(ASM5, mv), 
     }
 
     private fun insertGetResourcesMethod(cw: ClassVisitor) {
-        println("ActivityClassVisitor>>>insertGetResourcesMethod")
         val mv = cw.visitMethod(ACC_PUBLIC, "getResources", "()Landroid/content/res/Resources;", null, null)
         mv.visitVarInsn(ALOAD, 0)
         mv.visitVarInsn(ALOAD, 0)
@@ -48,7 +47,6 @@ internal class ActivityClassVisitor(mv: ClassVisitor) : ClassVisitor(ASM5, mv), 
 
 private class MergeGetResourcesMethod(api: Int, mv: MethodVisitor, private val superClassName: String) : MethodVisitor(api, mv) {
     override fun visitCode() {
-        println("ChangeOnCreateMethodVisitor>>>visitCode")
         mv.visitVarInsn(ALOAD, 0)
         mv.visitVarInsn(ALOAD, 0)
         mv.visitMethodInsn(INVOKESPECIAL, superClassName, "getResources", "()Landroid/content/res/Resources;", false)

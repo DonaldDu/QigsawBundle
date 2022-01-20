@@ -9,7 +9,6 @@ abstract class ResourcesInjectorAsmFactory : AsmClassVisitorFactory<Instrumentat
     companion object {
         @JvmStatic
         fun register(project: Project) {
-            println("ResourcesInjectorAsmFactory init for:${project.name}")
             val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
             androidComponents.onVariants { variant ->
                 variant.transformClassesWith(ResourcesInjectorAsmFactory::class.java, InstrumentationScope.ALL) {}
@@ -23,9 +22,7 @@ abstract class ResourcesInjectorAsmFactory : AsmClassVisitorFactory<Instrumentat
     }
 
     override fun isInstrumentable(classData: ClassData): Boolean {
-        val needInject = if (classData.className == componentActivity) true else classData.isSubActivity
-        if (needInject) println("AsmClassVisitorFactory>${classData.className}")
-        return needInject
+        return if (classData.className == componentActivity) true else classData.isSubActivity
     }
 }
 
