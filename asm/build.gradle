@@ -11,6 +11,6 @@ compileKotlin {
 mavenPublish("com.github.DonaldDu.QigsawBundle:asm:$libV")
 dependencies {
     implementation gradleApi()
-    compileOnly 'com.android.tools.build:gradle:7.0.4'
+    compileOnly 'com.android.tools.build:gradle:7.1.0'
     testImplementation 'junit:junit:4.13.2'
 }
