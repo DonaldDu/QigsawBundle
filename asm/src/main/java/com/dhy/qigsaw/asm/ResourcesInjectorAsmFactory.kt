@@ -15,6 +15,8 @@ abstract class ResourcesInjectorAsmFactory : AsmClassVisitorFactory<Instrumentat
                 variant.setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
             }
         }
+
+        private const val componentActivity = "androidx.core.app.ComponentActivity"
     }
 
     override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor {
@@ -24,15 +26,14 @@ abstract class ResourcesInjectorAsmFactory : AsmClassVisitorFactory<Instrumentat
     override fun isInstrumentable(classData: ClassData): Boolean {
         return if (classData.className == componentActivity) true else classData.isSubActivity
     }
-}
 
-private const val componentActivity = "androidx.core.app.ComponentActivity"
-private val ClassData.isSubActivity: Boolean
-    get() {
-        var isActivity = false
-        superClasses.forEach {
-            if (it == componentActivity) return false
-            if (it == "android.app.Activity") isActivity = true
+    private val ClassData.isSubActivity: Boolean
+        get() {
+            var isActivity = false
+            superClasses.forEach {
+                if (it == componentActivity) return false
+                if (it == "android.app.Activity") isActivity = true
+            }
+            return isActivity
         }
-        return isActivity
-    }
+}
