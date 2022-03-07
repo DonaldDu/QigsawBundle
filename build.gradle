@@ -3,7 +3,6 @@ buildscript {
     ext.kotlin_version = "1.5.21"
     ext.libV = '10.0.0'//发布到本地测试需要是高版本，不然可能会被自动替换为低版本
     ext.isLocalBuild = rootProject.hasProperty('BUNDLE_TOOL_PATH')
-    ext.providerSwitchV = rootProject.findProperty('localBuildV') ?: '1.4.0'//localBuildV : '10.0.0'
 
     repositories {
         google()

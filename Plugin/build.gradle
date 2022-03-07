@@ -36,7 +36,5 @@ dependencies {
     implementation 'org.json:json:20210307'
     implementation 'commons-io:commons-io:2.10.0'
     implementation 'com.gitee.DonaldDu:apk-parser:2.6.10.3'
-
-    implementation "com.github.DonaldDu.DynamicProviderSwitch:Plugin:$providerSwitchV"
     implementation "com.github.DonaldDu:OpenUsage:1.1.0"
 }

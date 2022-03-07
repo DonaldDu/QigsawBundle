@@ -13,7 +13,6 @@ class QigsawBundlePlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
         project.with {
-            apply plugin: 'dynamic-provider-switch'
             apply plugin: 'qigsaw-bundle-asm'
         }
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
