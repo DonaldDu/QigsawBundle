@@ -51,21 +51,22 @@ private fun File.manifestXmlWithoutVersion(): String {
 private fun File.zipDetails(): MutableMap<String, String> {
     val details: MutableMap<String, String> = mutableMapOf()
     val bytes = readZipEntryBytes("META-INF/MANIFEST.MF")
-
     val mf = String(bytes)
-    var name = ""
-    val keyName = "Name: "
-    val keyDigest = "SHA"// SHA1-Digest, SHA-256-Digest
-    mf.split("\r\n")
-        .filter { it.isNotEmpty() }
-        .forEach { line ->
-            if (line.startsWith(keyName)) {
-                name = line.substring(keyName.length)
-            } else if (line.startsWith(keyDigest)) {
-                details[name] = line.substring(line.indexOf(":") + 2)// 'SHA-256-Digest: '
+    mf.split("\r\n\r\n")
+        .filter { it.startsWith("Name:") }
+        .forEach { item ->
+            val kv = item.split("\r\n")
+            if (kv.size == 2) {
+                var name = kv.first()
+                var hash = kv.last()
+                if (name.startsWith("Name:") && hash.startsWith("SHA")) {
+                    name = name.substringAfter(' ')
+                    hash = hash.substringAfter(' ')
+                    details[name] = hash
+                }
             }
         }
-    details["AndroidManifest.xml"] = manifestXmlWithoutVersion().md5()
+    details["AndroidManifest.xml"] = manifestXmlWithoutVersion().md5()//overwrite init value
     return details
 }
 
