@@ -53,7 +53,6 @@ private fun File.zipDetails(): MutableMap<String, String> {
     val bytes = readZipEntryBytes("META-INF/MANIFEST.MF")
     val mf = String(bytes)
     mf.split("\r\n\r\n")
-        .filter { it.startsWith("Name:") }
         .forEach { item ->
             val kv = item.split("\r\n")
             if (kv.size == 2) {
