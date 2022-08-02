@@ -16,21 +16,8 @@ class QigsawBundlePlugin implements Plugin<Project> {
             apply plugin: 'qigsaw-bundle-asm'
         }
         project.extensions.create("qigsawBundleOption", QigsawBundleOption)
-        insertBundleParams()
         createTask()
         initOpenUsage()
-    }
-
-    private void insertBundleParams() {
-        project.afterEvaluate {
-            project.with {
-                android {
-                    defaultConfig {
-                        buildConfigField "String", 'dynamicFeatures', quote(dynamicFeatures.join(','))
-                    }
-                }
-            }
-        }
     }
 
     private void createTask() {
