@@ -5,10 +5,10 @@ buildscript {
     ext.isLocalBuild = rootProject.hasProperty('BUNDLE_TOOL_PATH')
 
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        mavenLocal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.2'
@@ -18,10 +18,10 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        mavenLocal()
     }
 }
 

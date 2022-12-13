@@ -14,9 +14,13 @@ public class BundleOption {
     public String debugType = "debug";
     public String releaseType = "release";
     /**
-     * JAR file or className, invoke with "-dir $splitsFolder -release {true:release, false:debug}"
+     * JAR file or className, invoke with "--uploadBaseApk {true/false} --dir $splitsFolder --release {true:release, false:debug}"
      */
     public Object publishTool;
+    /**
+     * uploadBaseApk or not
+     */
+    public boolean uploadBaseApk = true;
     transient boolean publish;
     public String copyToDirectory;
 

@@ -3,4 +3,5 @@ include ':Plugin'
 include ':ApkMd5'
 include ':app'
 include ':asm'
+include ':share'
 rootProject.name = "QigsawBundle"

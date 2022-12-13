@@ -3,6 +3,9 @@ package com.dhy.qigsawbundle.plugin
 import com.dhy.qigsawbundle.apkmd5.apkMd5
 import com.dhy.qigsawbundle.apkmd5.md5
 import com.google.gson.Gson
+import com.qigsaw.share.SplitDetails
+import com.qigsaw.share.SplitInfo
+import com.qigsaw.share.md5
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkMeta
 import org.apache.commons.io.FileUtils
@@ -16,12 +19,12 @@ object BundleApksUtil {
 
     @JvmStatic
     fun bundleApks(bundleOption: BundleOption, apks: File, baseApks: File) {
-        val splits = File(apks.parent, "splits")
-        apks.unzipSplits(splits)
+        val splitsFolder = File(apks.parent, "splits")
+        apks.unzipSplits(splitsFolder)
         val universalApk = baseApks.unzipUniversalApk()
         val app = ApkFile(universalApk).meta
 
-        clearSplitApks(bundleOption.keepLanguageConfigApks, splits)
+        clearSplitApks(bundleOption.keepLanguageConfigApks, splitsFolder)
         splitVersion = "${app.versionName}@${app.versionCode}"
         val fileNameParams: MutableMap<String, String> = mutableMapOf()
         fileNameParams["appId"] = app.packageName
@@ -33,46 +36,51 @@ object BundleApksUtil {
         fileNameParams["md5"] = universalApk.apkMd5()
         bundleOption.fileNameParams = fileNameParams
         bundleOption.apkFileHost = bundleOption.apkFileHost.trimTailSeparator()
-        val baseApk = File(splits, bundleOption.format() + ".apk")
+        val baseApk = File(splitsFolder, bundleOption.format() + ".apk")
         universalApk.renameTo(baseApk)
 
-        val splitApks = splits.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }
-        val infoJsonFile = genSplitInfo(bundleOption, app.versionName, splitApks)
+        val splitApks = splitsFolder.listFiles()?.filter { it.name.endsWith(".apk") && it.name != baseApk.name }
+        val splitDetails = genSplitInfo(bundleOption, app.versionName, splitApks)
 
         fileNameParams["split"] = ""
         fileNameParams["abi"] = ""
-        fileNameParams["version"] = "${app.versionName}@${app.versionCode}"
-        fileNameParams["md5"] = infoJsonFile.md5()
-        val newInfoJsonFile = File(splits, bundleOption.format() + ".json")
-        FileUtils.copyFile(infoJsonFile, newInfoJsonFile)
-        infoJsonFile.delete()
+        fileNameParams["version"] = splitVersion
+        fileNameParams["md5"] = splitDetails.md5()
+        val newInfoJsonFile = File(splitsFolder, bundleOption.format() + ".json")
+        newInfoJsonFile.writeJson(splitDetails)
 
-        if (splits.exists() && bundleOption.copyToDirectory != null) {
-            copySplits(splits, File(bundleOption.copyToDirectory))
+        if (splitsFolder.exists() && bundleOption.copyToDirectory != null) {
+            copySplits(splitsFolder, File(bundleOption.copyToDirectory))
         }
-        if (bundleOption.publish) publishSplits(bundleOption, splits)
+        if (bundleOption.publish) publishSplits(bundleOption, splitsFolder)
+        println("splits dir ${splitsFolder.absolutePath}")
     }
 
     @JvmStatic
     fun publishSplits(bundleOption: BundleOption, splits: File) {
         val publish = bundleOption.publishTool
         if (publish != null) {
-            val release = bundleOption.isRelease
+            val publishOption = PublishOption().apply {
+                forceUpdate = false
+                dir = splits.absolutePath
+                release = bundleOption.isRelease
+                uploadBaseApk = bundleOption.uploadBaseApk
+            }
+
             if (File(publish.toString()).exists()) {//JAR
                 //quote path for which has EMPTY_CHAR, like 'C:\Program Files\test'
-                runCommand("java -jar $publish -dir \"$splits\" -release $release")
+                runCommand("java -jar $publish ${publishOption.toCmdString()}")
             } else {//ClassName
-                publishSplitsWithMain(publish.toString(), splits, release)
+                publishSplitsWithMain(publish.toString(), publishOption)
             }
         }
     }
 
-    private fun publishSplitsWithMain(className: String, dir: File, release: Boolean) {
+    private fun publishSplitsWithMain(className: String, publishOption: PublishOption) {
         try {
-            val params = arrayOf("-dir", dir.absolutePath, "-release", release.toString())
             val publish = Class.forName(className)
             val m = publish.getDeclaredMethod("main", Array<String>::class.java)
-            m.invoke(null, params)
+            m.invoke(null, publishOption.toCmdArray())
         } catch (e: ClassNotFoundException) {
             println("publishTool must be JAR_PATH OR CLASS_NAME: $className")
         }
@@ -93,7 +101,11 @@ object BundleApksUtil {
         }
     }
 
-    private fun genSplitInfo(bundleOption: BundleOption, appVersionName: String, splitApks: List<File>?): File {
+    private fun File.writeJson(data: Any) {
+        writeBytes(gson.toJson(data).toByteArray())
+    }
+
+    private fun genSplitInfo(bundleOption: BundleOption, appVersionName: String, splitApks: List<File>?): SplitDetails {
         val details = SplitDetails()
         details.qigsawId = appVersionName
         details.appVersionName = appVersionName
@@ -105,9 +117,7 @@ object BundleApksUtil {
         if (renameTasks.isNotEmpty()) renameTasks.values.forEach { it?.rename(true) }
         renameTasks.clear()
         details.updateSplits = details.splits.map { it.splitName }
-        val info = File.createTempFile("info", ".json")
-        FileUtils.writeByteArrayToFile(info, gson.toJson(details).toByteArray())
-        return info
+        return details
     }
 
     private fun showInfo(bundleOption: BundleOption, details: SplitDetails, apk: File) {
@@ -119,7 +129,7 @@ object BundleApksUtil {
             splitInfo.splitName = info.splitName
             splitInfo.builtIn = false
             splitInfo.onDemand = true
-            splitInfo.apkData = mutableListOf()
+            splitInfo.apkDataList = mutableListOf()
             //用bundletool打包出来的，Split版本信息都是base的
             splitInfo.version = splitVersion
         }
@@ -130,15 +140,15 @@ object BundleApksUtil {
         splitInfo.dexNumber += apk.dexNumber()
         if (info.minSdkVersion != null) splitInfo.minSdkVersion = info.minSdkVersion.toInt()
 
-        val splitApkData = SplitInfo.SplitApkData()
-        splitInfo.apkData.add(splitApkData)
+        val splitApkData = SplitInfo.ApkData()
+        splitInfo.apkDataList.add(splitApkData)
         splitApkData.size = apk.length()
         splitApkData.md5 = apk.apkMd5()
         splitApkData.abi = info.abi
         if (info.isSO()) {
-            if (splitInfo.libData == null) splitInfo.libData = mutableListOf()
+            if (splitInfo.libDataList == null) splitInfo.libDataList = mutableListOf()
             val splitLibData = apk.splitLibData()
-            if (splitLibData != null) splitInfo.libData.add(splitLibData)
+            if (splitLibData != null) splitInfo.libDataList.add(splitLibData)
         }
 
         RenameTask(apk, splitInfo, splitApkData, bundleOption).rename(false)
@@ -149,7 +159,7 @@ object BundleApksUtil {
     private class RenameTask(
         val apk: File,
         val splitInfo: SplitInfo,
-        val splitApkData: SplitInfo.SplitApkData,
+        val splitApkData: SplitInfo.ApkData,
         bundleOption: BundleOption
     ) {
         private val apkFileHost = bundleOption.apkFileHost
@@ -226,15 +236,15 @@ object BundleApksUtil {
         return count
     }
 
-    private fun File.splitLibData(): SplitInfo.SplitLibData? {
-        val splitLibData = SplitInfo.SplitLibData()
+    private fun File.splitLibData(): SplitInfo.LibData? {
+        val splitLibData = SplitInfo.LibData()
         splitLibData.jniLibs = mutableListOf()
         val zip = ZipFile(this)
         val files = zip.entries()
         while (files.hasMoreElements()) {
             val e = files.nextElement()
             if (e.name.startsWith("lib/") && e.name.endsWith(".so")) {
-                val lib = SplitInfo.SplitLibData.Lib()
+                val lib = SplitInfo.LibData.Lib()
                 if (splitLibData.abi == null) splitLibData.abi = e.name.abi
                 lib.name = e.name.substring(e.name.lastIndexOf('/') + 1)
                 lib.md5 = zip.getInputStream(e).md5()

@@ -1,0 +1,9 @@
+-keepclassmembers class com.qigsaw.share.SplitDetails{
+    !static !transient <fields>;
+}
+-keepclassmembers class com.qigsaw.share.SplitInfo{
+    !static !transient <fields>;
+}
+-keepclassmembers class com.qigsaw.share.SplitInfo**{
+    !static !transient <fields>;
+}

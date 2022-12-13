@@ -7,6 +7,7 @@ import com.dhy.qigsawbundle.apkmd5.md5
 import com.google.gson.Gson
 import com.iqiyi.android.qigsaw.core.Qigsaw
 import com.iqiyi.android.qigsaw.core.common.ICompatBundle
+import com.qigsaw.share.SplitDetails
 import java.io.File
 import java.io.InputStream
 import java.util.*
@@ -86,8 +87,8 @@ internal fun clearUpdate(oldF: File, newF: File) {
         val oldSplit = old.splits.find { it.splitName == splitName }
         val newSplit = new.splits.find { it.splitName == splitName }
         if (oldSplit != null && newSplit != null) {
-            val oldMd5 = oldSplit.apkData.map { it.md5 }
-            val newMd5 = newSplit.apkData.map { it.md5 }
+            val oldMd5 = oldSplit.apkDataList.map { it.md5 }
+            val newMd5 = newSplit.apkDataList.map { it.md5 }
             if (!oldMd5.containsAll(newMd5)) updateSplits.add(splitName)
         } else updateSplits.add(splitName)
     }
