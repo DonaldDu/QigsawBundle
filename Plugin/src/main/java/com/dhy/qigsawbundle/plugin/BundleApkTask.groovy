@@ -26,10 +26,7 @@ class BundleApkTask extends DefaultTask {
 
     @TaskAction
     void generate() throws IOException {
-        bundleTool = project.findProperty('BUNDLE_TOOL_PATH')
-        if (bundleTool == null) {
-            throw new IllegalArgumentException('You must set BUNDLE_TOOL_PATH first, eg: project.ext.BUNDLE_TOOL_PATH')
-        }
+        bundleTool = bundleOption.bundleTool
         if (bundleOption.apkFileHost == null) {
             throw new IllegalArgumentException('You should set QigsawBundleOption.apkFileHost for apk url')
         }
@@ -46,7 +43,7 @@ class BundleApkTask extends DefaultTask {
     }
 
     private void genSplits(File aab) {
-        def cmd = "java -jar $bundleTool build-apks --bundle=${aab.name} --output=${apks.name} --optimize-for=abi --overwrite "
+        def cmd = "$bundleTool build-apks --bundle=${aab.name} --output=${apks.name} --optimize-for=abi --overwrite "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }
@@ -56,7 +53,7 @@ class BundleApkTask extends DefaultTask {
     }
 
     private void genBaseApk(File aab) {
-        def cmd = "java -jar $bundleTool build-apks --bundle=${aab.name} --output=${baseApks.name} --mode=universal --modules=base --overwrite "
+        def cmd = "$bundleTool build-apks --bundle=${aab.name} --output=${baseApks.name} --mode=universal --modules=base --overwrite "
         if (bundleOption.options != null && bundleOption.options.size() > 0) {
             cmd += bundleOption.options.join(' ')
         }

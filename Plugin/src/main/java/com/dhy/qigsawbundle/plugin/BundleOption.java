@@ -3,6 +3,7 @@ package com.dhy.qigsawbundle.plugin;
 import java.util.Map;
 
 public class BundleOption {
+    public String bundleTool = "bundletool.bat";
     /**
      * {host}/{apkName}.apk -> "http://192.168.80.15/dynamicfeature-master-v1.1@2.apk"
      */

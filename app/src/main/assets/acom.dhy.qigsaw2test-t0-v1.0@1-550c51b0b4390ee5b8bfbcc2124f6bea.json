@@ -1,0 +1,128 @@
+{
+  "qigsawId": "1.0",
+  "appVersionName": "1.0",
+  "updateSplits": [
+    "assets",
+    "java",
+    "native"
+  ],
+  "splits": [
+    {
+      "splitName": "assets",
+      "builtIn": false,
+      "onDemand": true,
+      "version": "1.0@1",
+      "minSdkVersion": 21,
+      "dexNumber": 0,
+      "apkData": [
+        {
+          "abi": "master",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-assets-master-t0-v1.0@1-ae334200422cbb184693ca721469d558.apk",
+          "md5": "ae334200422cbb184693ca721469d558",
+          "size": 8601
+        }
+      ]
+    },
+    {
+      "splitName": "java",
+      "builtIn": false,
+      "onDemand": true,
+      "version": "1.0@1",
+      "minSdkVersion": 21,
+      "dexNumber": 1,
+      "dependencies": [
+        "assets"
+      ],
+      "apkData": [
+        {
+          "abi": "master",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-java-master-t0-v1.0@1-fd2be14ddfdd2acf784836a9c3fb03a1.apk",
+          "md5": "fd2be14ddfdd2acf784836a9c3fb03a1",
+          "size": 12772
+        }
+      ]
+    },
+    {
+      "splitName": "native",
+      "builtIn": false,
+      "onDemand": true,
+      "version": "1.0@1",
+      "minSdkVersion": 21,
+      "dexNumber": 1,
+      "apkData": [
+        {
+          "abi": "arm64-v8a",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-native-arm64-v8a-t0-v1.0@1-3defad23ad3ee7689bb53c9e6ca1e49e.apk",
+          "md5": "3defad23ad3ee7689bb53c9e6ca1e49e",
+          "size": 8553
+        },
+        {
+          "abi": "armeabi-v7a",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-native-armeabi-v7a-t0-v1.0@1-d505bb50e85c6745cc8c7bdd5de9ccce.apk",
+          "md5": "d505bb50e85c6745cc8c7bdd5de9ccce",
+          "size": 16747
+        },
+        {
+          "abi": "master",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-native-master-t0-v1.0@1-1b69767bce7bc0a1ee97ac6d42e679fb.apk",
+          "md5": "1b69767bce7bc0a1ee97ac6d42e679fb",
+          "size": 12774
+        },
+        {
+          "abi": "x86",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-native-x86-t0-v1.0@1-bf3a7ccda4656a1947ef7979161a9723.apk",
+          "md5": "bf3a7ccda4656a1947ef7979161a9723",
+          "size": 8547
+        },
+        {
+          "abi": "x86_64",
+          "url": "http://www.qigsaw.com/acom.dhy.qigsaw2test-native-x86-64-t0-v1.0@1-311db6ee15c37d3b716ff007def8654e.apk",
+          "md5": "311db6ee15c37d3b716ff007def8654e",
+          "size": 8550
+        }
+      ],
+      "libData": [
+        {
+          "abi": "arm64-v8a",
+          "jniLibs": [
+            {
+              "name": "libhello-jni.so",
+              "md5": "f05c2b92e1991ccb0a2bf536d653e0d4",
+              "size": 5896
+            }
+          ]
+        },
+        {
+          "abi": "armeabi-v7a",
+          "jniLibs": [
+            {
+              "name": "libhello-jni.so",
+              "md5": "3f36da8f6d9262180b7f2c1314b23cd7",
+              "size": 13904
+            }
+          ]
+        },
+        {
+          "abi": "x86",
+          "jniLibs": [
+            {
+              "name": "libhello-jni.so",
+              "md5": "f3926d538028c8ac0597319f92980d37",
+              "size": 5564
+            }
+          ]
+        },
+        {
+          "abi": "x86_64",
+          "jniLibs": [
+            {
+              "name": "libhello-jni.so",
+              "md5": "56c9a6d3db75de3c1b8f5d3e3eb8d740",
+              "size": 6168
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

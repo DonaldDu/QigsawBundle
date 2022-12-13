@@ -18,6 +18,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
@@ -38,6 +42,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation project(path: ':ApkMd5')
+    implementation project(path: ':share')
+    implementation project(path: ':compat')
     testImplementation project(path: ':asm')
     testImplementation 'org.ow2.asm:asm:9.1'
     testImplementation 'junit:junit:4.13.2'
