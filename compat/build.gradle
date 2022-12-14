@@ -42,8 +42,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-//    compileOnly "com.github.DonaldDu.Qigsaw:splitcore:2.0.6"
-    compileOnly "com.github.DonaldDu.Qigsaw:splitcore:$libV"
-//    compileOnly "com.github.DonaldDu.Qigsaw:splitrequest:$libV"
+    compileOnly "com.github.DonaldDu.Qigsaw:splitcore:2.0.7"
     implementation 'com.google.code.gson:gson:2.10'
 }
