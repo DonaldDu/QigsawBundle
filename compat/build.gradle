@@ -30,6 +30,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        buildConfig = false
+    }
 }
 mavenPublish("com.github.DonaldDu.QigsawBundle:Compat:$libV")
 dependencies {
