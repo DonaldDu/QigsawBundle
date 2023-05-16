@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.text.SimpleDateFormat
 import java.util.zip.ZipFile
 
 object BundleApksUtil {
@@ -46,7 +47,7 @@ object BundleApksUtil {
         fileNameParams["abi"] = ""
         fileNameParams["version"] = splitVersion
         fileNameParams["md5"] = splitDetails.md5()
-        val newInfoJsonFile = File(splitsFolder, bundleOption.format() + ".json")
+        val newInfoJsonFile = File(splitsFolder, bundleOption.format() + "-${dateString()}.json")
         newInfoJsonFile.writeJson(splitDetails)
 
         if (splitsFolder.exists() && bundleOption.copyToDirectory != null) {
@@ -54,6 +55,10 @@ object BundleApksUtil {
         }
         if (bundleOption.publish) publishSplits(bundleOption, splitsFolder)
         println("splits dir ${splitsFolder.absolutePath}")
+    }
+
+    private fun dateString(): String {
+        return SimpleDateFormat("yyyyMMddHHmmss").format(System.currentTimeMillis())
     }
 
     @JvmStatic
