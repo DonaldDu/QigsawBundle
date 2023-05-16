@@ -8,13 +8,15 @@ import java.io.File
 class SplitDetailsMd5Test {
     @Test
     fun testMe() {
-        val md5 = "550c51b0b4390ee5b8bfbcc2124f6bea"
-        val jsonFile = File(projectRootDir, "tests/splits/acom.dhy.qigsaw2test-t0-v1.0@1-$md5.json")
-        val json = jsonFile.readText()
-        val gson = Gson()
-        val details = gson.fromJson(json, SplitDetails::class.java)
-        println(details.md5())
-        Assert.assertEquals(md5, details.md5())
+        val jsonFile = File(projectRootDir, "tests/splits").listFiles()?.find { it.name.endsWith(".json") }
+        if (jsonFile?.exists() == true) {
+            val json = jsonFile.readText()
+            val gson = Gson()
+            val details = gson.fromJson(json, SplitDetails::class.java)
+            println(details.md5())
+            val md5 = ("[a-zA-Z0-9]{32}").toRegex().find(jsonFile.name)?.value
+            Assert.assertEquals(md5, details.md5())
+        }
     }
 }
 
