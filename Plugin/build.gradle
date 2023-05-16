@@ -8,6 +8,9 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
 compileKotlin {
     kotlinOptions { jvmTarget = "1.8" }
 }

@@ -1,6 +1,8 @@
 package com.dhy.qigsawbundle.plugin
 
 import com.google.gson.Gson
+import com.qigsaw.share.SplitDetails
+import com.qigsaw.share.md5
 import org.junit.Assert
 import org.junit.Test
 import java.io.File

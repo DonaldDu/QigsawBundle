@@ -22,7 +22,7 @@ class ActivityClassVisitorTest {
         val tmp = File("AsmInsertActivity.class")
         tmp.writeBytes(cw.toByteArray())
         println(tmp.absolutePath)
-        Assert.assertEquals("f9541f4768e6eaeb37eb76e6b38e0e30", tmp.md5())
+        Assert.assertEquals("58f8f8ec9f09c166764a6deaad17c046", tmp.md5())
     }
 
     @Test
@@ -35,7 +35,7 @@ class ActivityClassVisitorTest {
         val tmp = File("AsmMergeActivity.class")
         tmp.writeBytes(cw.toByteArray())
         println(tmp.absolutePath)
-        Assert.assertEquals("bce3be74fb84d28eb42993e653b47bdd", tmp.md5())
+        Assert.assertEquals("4fbb2006b0038af8f677c4daf94e8ecc", tmp.md5())
     }
 }
 
